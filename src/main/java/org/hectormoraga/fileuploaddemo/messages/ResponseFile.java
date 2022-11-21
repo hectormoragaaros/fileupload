@@ -5,6 +5,10 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ResponseMessage {
-	  private String message;
+public class ResponseFile {
+	private String name;
+	private String url;
+	private String type;
+	private long size;
+	
 }
