@@ -10,6 +10,7 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name="file_storage")
@@ -27,6 +28,7 @@ public class FileDB {
     		}
     )
     @Column(name="id", columnDefinition = "uuid", updatable = false, nullable = false)
+    @Type(type="org.hibernate.type.UUIDCharType")
     private UUID id;
 	@Column(name = "file_name", nullable = false)
 	private String fileName;

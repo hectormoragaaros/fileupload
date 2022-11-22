@@ -4,7 +4,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.hectormoraga.fileuploaddemo.exception.ResourceNotFoundException;
 import org.hectormoraga.fileuploaddemo.messages.ErrorResponse;
@@ -56,21 +55,20 @@ public class FileController {
 
 	@GetMapping("/files")
 	public ResponseEntity<List<ResponseFile>> getListFiles() {
-		List<ResponseFile> files = storageService
-				.getAllFiles()
-				.map(dbFile -> {
-					String fileDownloadUri = ServletUriComponentsBuilder
-							.fromCurrentContextPath().path("/files/")
-							.path(dbFile.getId().toString())
-							.toUriString();
-					String msg = (dbFile!=null)?"operation successfull":"file not exist";
+		List<ResponseFile> responseList = storageService.getAllFiles()
+				.stream()
+				.map(fileDb -> new ResponseFile(fileDb.getFileName(), 
+							ServletUriComponentsBuilder
+								.fromCurrentContextPath().path("/files/")
+								.path(fileDb.getId().toString())
+								.toUriString(),
+							fileDb.getMimeType(),
+							fileDb.getSize(),
+							(fileDb!=null)?"operation successfull":"file not exist"))
+				.toList();
 
-					return new ResponseFile(dbFile.getFileName(), fileDownloadUri, dbFile.getMimeType(), dbFile.getSize(), msg);
-				})
-				.collect(Collectors.toList());
-
-		if (!files.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.OK).body(files);			
+		if (!responseList.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.OK).body(responseList);			
 		} else {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
 		}

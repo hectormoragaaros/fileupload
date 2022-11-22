@@ -25,8 +25,8 @@ El endpoint **/files/{UUID}** me permite recuperar el archivo original, con su n
 ## Notas
    
 Por alguna razón que no he indagado, lombok no se instalaba al agregarlo como referencia mediante Maven. Tuve que bajar el archivo .jar y ejecutarlo para que quedara instalado dentro de Eclipse, como lo indica [\[2\]](#ref2). La utilidad de Lombok es que te evita la creación de código repetitivo, mediante la utilización de algunos **annotations**. Un ejemplo de ello se encuentra en [\[3\]](#ref3).
-Dado que el UUID se utiliza como clave primaria dentro de la base de datos, se debe tener alguna estrategia de creación de ese UUID tanto dentro de Java como también dentro de la base de datos. Para la creación de un UUID único se usó **UUID.randomUUID()**, que de acuerdo a [\4\]](#ref4) tiene una muy baja probabilidad de colisiones. La opción elegida se basó en [\[5\]](#ref5).
-Respecto a la subida y bajada de archivos me basé en los proyectos [\[6\]](#ref6), [\[7\]](#ref7), [\[8\]](#ref8), [\[9\]](#ref9) y [\[10\]](#ref10). Como se almacenaba los datos del archivo, como nombre y tipo MIME, al recomponer el archivo con el endpoint /files/{uuid}, se debe indicar todos esos datos en la respuesta, de acuerdo a lo sugerido en [\[11\]](#ref11).
+Dado que el UUID se utiliza como clave primaria dentro de la base de datos, se debe tener alguna estrategia de creación de ese UUID tanto dentro de Java como también dentro de la base de datos. Para la creación de un UUID único se usó **UUID.randomUUID()**, que de acuerdo a [\4\]](#ref4) tiene una muy baja probabilidad de colisiones. La opción elegida se basó en [\[5\]](#ref5). Otro problema que me surgió estaba relacionado con el endpoint **/files/**, ya que me indicaba la cantidad correcta de objetos incluídos en la lista, pero __solamente me repetía el primer dato N veces__. Para resolverlo, una gran solución se encuentra en [\[6\]](#ref6).
+Respecto a la subida y bajada de archivos me basé en los proyectos [\[7\]](#ref7), [\[8\]](#ref8), [\[9\]](#ref9), [\[10\]](#ref10) y [\[11\]](#ref11). Como se almacenaba los datos del archivo, como nombre y tipo MIME, al recomponer el archivo con el endpoint /files/{uuid}, se debe indicar todos esos datos en la respuesta, de acuerdo a lo sugerido en [\[12\]](#ref12).
 
 ## Referencias
 
@@ -35,9 +35,10 @@ Respecto a la subida y bajada de archivos me basé en los proyectos [\[6\]](#ref
 - [3] <a id="ref3" href="https://javabydeveloper.com/lombok-spring-boot-example/">Lombok + Spring Boot Example</a>
 - [4] <a id="ref4" href="https://stackoverflow.com/questions/65674455/method-to-generating-random-uuid-using-java">method to generating random UUID using Java \[duplicate\]</a>
 - [5] <a id="ref5" href="https://www.baeldung.com/java-uuid">Guide to UUID in Java</a>
-- [6] <a id="ref6" href="https://spring.io/guides/gs/uploading-files/">Uploading Files</a>
-- [7] <a id="ref7" href="https://www.codejava.net/frameworks/spring-boot/file-download-upload-rest-api-examples">Spring Boot File Download and Upload REST API Examples</a>
-- [8] <a id="ref8" href="https://www.callicoder.com/spring-boot-file-upload-download-rest-api-example/">Spring Boot File Upload / Download Rest API Example</a>
-- [9] <a id="ref9" href="https://www.bezkoder.com/spring-boot-file-upload/">Spring Boot File upload example with Multipart File</a>
-- [10] <a id="ref10" href="https://www.bezkoder.com/spring-boot-upload-file-database/">Spring Boot Upload/Download File to/from Database example</a>
-- [11] <a id="ref11" href="https://stackoverflow.com/questions/67756018/set-the-content-type-header-dynamically-in-spring-boot">Set the Content-Type header dynamically in Spring Boot</a>
+- [6] <a id="ref6" href="https://stackoverflow.com/questions/49688308/spring-data-cannot-fetch-a-record-using-uuid-in-postgresql">Spring Data cannot fetch a record using UUID in postgresql</a>
+- [7] <a id="ref7" href="https://spring.io/guides/gs/uploading-files/">Uploading Files</a>
+- [8] <a id="ref8" href="https://www.codejava.net/frameworks/spring-boot/file-download-upload-rest-api-examples">Spring Boot File Download and Upload REST API Examples</a>
+- [9] <a id="ref9" href="https://www.callicoder.com/spring-boot-file-upload-download-rest-api-example/">Spring Boot File Upload / Download Rest API Example</a>
+- [10] <a id="ref10" href="https://www.bezkoder.com/spring-boot-file-upload/">Spring Boot File upload example with Multipart File</a>
+- [11] <a id="ref11" href="https://www.bezkoder.com/spring-boot-upload-file-database/">Spring Boot Upload/Download File to/from Database example</a>
+- [12] <a id="ref12" href="https://stackoverflow.com/questions/67756018/set-the-content-type-header-dynamically-in-spring-boot">Set the Content-Type header dynamically in Spring Boot</a>

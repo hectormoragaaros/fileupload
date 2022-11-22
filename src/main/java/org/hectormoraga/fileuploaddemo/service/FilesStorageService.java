@@ -6,9 +6,9 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import org.apache.tika.Tika;
 import org.hectormoraga.fileuploaddemo.exception.FileStorageException;
@@ -48,7 +48,7 @@ public class FilesStorageService {
 
 				if (originalFilename != null) {
 					String filename = StringUtils.cleanPath(originalFilename);
-					fileDB = fileDBRepository.save(new FileDB(filename, mimeType, (int) file.getSize()));
+					fileDB = fileDBRepository.saveAndFlush(new FileDB(filename, mimeType, (int) file.getSize()));
 
 					Files.copy(file.getInputStream(), this.root.resolve(fileDB.getId().toString()));
 				}
@@ -104,7 +104,7 @@ public class FilesStorageService {
 		}
 	}
 
-	public Stream<FileDB> getAllFiles() {
-		return fileDBRepository.findAll().stream();
+	public List<FileDB> getAllFiles() {
+		return fileDBRepository.findAll();
 	}
 }
