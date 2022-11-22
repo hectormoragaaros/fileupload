@@ -10,12 +10,10 @@
 	</parent>
 	<groupId>org.hectormoraga</groupId>
 	<artifactId>fileuploaddemo</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.1</version>
 	<name>fileupload Maven Webapp demo</name>
 	<description>Demo FileUpload usando servicios REST</description>
 	<packaging>war</packaging>
-	<!-- FIXME change it to the project's website -->
-	<url>http://www.example.com</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>11</maven.compiler.source>
@@ -31,6 +29,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
+		<!-- for logging using Aspects -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -39,6 +42,12 @@
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
 			<scope>provided</scope>
+		</dependency>
+		<!-- Para analizar el mime type de los archivos -->
+		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-core</artifactId>
+			<version>2.6.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -51,7 +60,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<finalName>fileuploaddemo</finalName>
 		<pluginManagement>

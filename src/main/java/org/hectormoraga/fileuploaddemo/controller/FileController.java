@@ -1,18 +1,16 @@
 package org.hectormoraga.fileuploaddemo.controller;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.hectormoraga.fileuploaddemo.exception.ResourceNotFoundException;
+import org.hectormoraga.fileuploaddemo.messages.ErrorResponse;
 import org.hectormoraga.fileuploaddemo.messages.ResponseFile;
-import org.hectormoraga.fileuploaddemo.messages.ResponseMessage;
 import org.hectormoraga.fileuploaddemo.model.FileDB;
 import org.hectormoraga.fileuploaddemo.service.FilesStorageService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -30,58 +28,79 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @Controller
 @CrossOrigin("http://localhost:8081")
 public class FileController {
-	private static Logger logger = LoggerFactory.getLogger(FileController.class);
-	
 	@Autowired
 	FilesStorageService storageService;
 
 	@PostMapping("/upload")
-	public ResponseEntity<ResponseMessage> uploadFile(@RequestParam("file") MultipartFile file) {		
+	public ResponseEntity<Object> uploadFile(@RequestParam("file") MultipartFile file) {
 		String message = "";
-		
+
 		try {
 			FileDB fileDB = storageService.store(file);
-
-			message = "Uploaded the file successfully: " + fileDB.getId().toString();
-			return ResponseEntity.status(HttpStatus.OK).body(new ResponseMessage(message));
+			String fileDownloadUri = ServletUriComponentsBuilder
+					.fromCurrentContextPath().path("/uploads/")
+					.path(fileDB.getId().toString())
+					.toUriString();
+			message = "File Uploaded successfully!";
+			
+			return ResponseEntity
+					.status(HttpStatus.OK)
+					.body(new ResponseFile(fileDB.getFileName(), fileDownloadUri, fileDB.getMimeType(), fileDB.getSize(), message));
 		} catch (Exception e) {
 			message = "Could not upload the file: " + file.getOriginalFilename() + "!";
-			logger.warn("error: {}", e.getMessage());
-			return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(new ResponseMessage(message));
+			return ResponseEntity
+					.status(HttpStatus.EXPECTATION_FAILED)
+					.body(new ErrorResponse(message));
 		}
 	}
 
 	@GetMapping("/files")
 	public ResponseEntity<List<ResponseFile>> getListFiles() {
-		List<ResponseFile> files = storageService.getAllFiles().map(dbFile -> {
-			String fileDownloadUri = ServletUriComponentsBuilder
-					.fromCurrentContextPath()
-					.path("/uploads/")
-					.path(dbFile.getId().toString())
-					.toUriString();
-			
-			return new ResponseFile(
-					dbFile.getFileName(),
-					fileDownloadUri,
-					dbFile.getMimeType(),
-					dbFile.getSize());
-		}).collect(Collectors.toList());
-		
-		return ResponseEntity.status(HttpStatus.OK).body(files);
+		List<ResponseFile> files = storageService
+				.getAllFiles()
+				.map(dbFile -> {
+					String fileDownloadUri = ServletUriComponentsBuilder
+							.fromCurrentContextPath().path("/files/")
+							.path(dbFile.getId().toString())
+							.toUriString();
+					String msg = (dbFile!=null)?"operation successfull":"file not exist";
+
+					return new ResponseFile(dbFile.getFileName(), fileDownloadUri, dbFile.getMimeType(), dbFile.getSize(), msg);
+				})
+				.collect(Collectors.toList());
+
+		if (!files.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.OK).body(files);			
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());
+		}
 	}
 
-	@GetMapping("/files/{id}")
-	  public ResponseEntity<byte[]> getFile(@PathVariable String id) throws IOException {
-	    FileDB fileDB = storageService.getFile(id);
-		Resource file = storageService.load(id);
-		Path filePath = file.getFile().toPath();
-		byte[] bytes = Files.readAllBytes(filePath);
-		String fileName = fileDB.getFileName();
-		String mimeType = fileDB.getMimeType();
-		
-	    return ResponseEntity.ok()
-	        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-	        .header(HttpHeaders.CONTENT_TYPE, mimeType)
-	        .body(bytes);
-	  }
+	/**
+	 * Endpoint REST que me permite obtener un archivo ya almacenado en el servidor,
+	 * dado su uuid (como texto)
+	 */
+	@GetMapping("/files/{uuid}")
+	public ResponseEntity<byte[]> getFile(@PathVariable String uuid) throws ResourceNotFoundException {
+		FileDB fileDB = storageService.getFile(uuid)
+				.orElseThrow( () ->  new ResourceNotFoundException("File not found in DB for this UUID ::" + uuid));
+
+		try {
+			Resource file = storageService.load(uuid);
+			Path filePath = file.getFile().toPath();
+
+			byte[] bytes = Files.readAllBytes(filePath);
+
+			String fileName = fileDB.getFileName();
+			String mimeType = fileDB.getMimeType();
+
+			return ResponseEntity
+					.ok()
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+					.header(HttpHeaders.CONTENT_TYPE, mimeType)
+					.body(bytes);
+		} catch (Exception ex) {
+			throw new ResourceNotFoundException("File not found physically for this UUID ::" + uuid);
+		}
+	}
 }
